@@ -10,10 +10,6 @@ import lex;
 // - array
 // - struct
 // - null?
-//
-// In the future, could do custom serialization by method on type.
-// But currently can't as static/constructor methods not allowed. Check
-// how odin handles 
 
 // zero copy, only allocates for slices (json arrays)
 macro from_str($Type, Allocator alloc, String s) {
@@ -23,6 +19,16 @@ macro from_str($Type, Allocator alloc, String s) {
 }
 
 macro parse($Type, Allocator alloc, Lexer* lex) {
+	$if ($defined($Type.parse_json)):
+		$Type custom;
+		// NOTE if just rethrowing, macro doesn't seem to realize
+		// that the return type is $TYPE!
+		if (catch custom.parse_json(alloc, lex)) {
+			return ParseResult.ERROR?;
+		}
+		return custom;
+	$endif
+
 	Tag first_tag = lex.next()!!;
 	// hack for array end, see below.
 	if (first_tag == ARRAY_END) return ParseResult.ARRAY_END?;
@@ -129,6 +135,28 @@ fn void test_aos() @test {
 	// Foo[] doesn't implement equatable even when Foo does?
 	test::eq(foos[0], Foo { .is_bar = true });
 	test::eq(foos[1], Foo { .is_bar = false });
+}
+
+enum Baz {
+	ONE,
+	TWO,
+}
+
+fn void! Baz.parse_json(&self, Allocator alloc, Lexer* lex) {
+	switch (lex.next()!!) {
+		case STRING:
+			switch (lex.token_slice) {
+				case "one": *self = Baz.ONE;
+				case "two": *self = Baz.TWO;
+			}
+		default:
+			return ParseResult.ERROR?;
+	}
+}
+
+fn void test_custom() @test {
+	Baz baz = from_str(Baz, allocator::temp(), `"one"`)!!;
+	test::eq(baz, Baz.ONE);
 }
 
 fault ParseResult {

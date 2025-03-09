@@ -13,3 +13,12 @@ macro from_str($Type, Allocator alloc, String s) {
 	lex.init(s);
 	return deserialize::parse($Type, alloc, &lex);
 }
+
+macro to_json(expr, Allocator alloc) {
+	@pool(alloc) {
+		DString s;
+		s.temp_init();
+		serialize::add_json(expr, &s);
+		return s.copy_str(alloc);
+	};
+}

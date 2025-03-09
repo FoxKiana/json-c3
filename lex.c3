@@ -1,4 +1,4 @@
-module lex;
+module json::lex;
 
 // Assumes correct json. Does not even check commas (just skips as whitespace)
 

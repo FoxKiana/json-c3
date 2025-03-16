@@ -9,7 +9,7 @@ import std::core;
 
 macro void add_json(src, DString* dest) {
 	// Switch on primitives
-	$switch ($typeof(src))
+	$switch ($typeof(src)):
 		$case String:
 			dest.append(`"`);
 			dest.append(src);
@@ -28,10 +28,10 @@ macro void add_json(src, DString* dest) {
 	$endswitch
 
 	// Switch on complex types
-	$switch ($typeof(src).kindof)
+	$switch ($typeof(src).kindof):
 		$case TypeKind.STRUCT:
 			dest.append("{");
-			$foreach ($idx, $member : $typeof(src).membersof)
+			$foreach $idx, $member : $typeof(src).membersof:
 				if ($idx > 0) {
 					dest.append(",");
 				}

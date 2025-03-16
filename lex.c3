@@ -45,9 +45,9 @@ fn void Lexer.skip_whitespace(&l) {
 	}
 }
 
-fn Tag! Lexer.next(&l) {
+fn Tag? Lexer.next(&l) {
 	if (l.curr >= l.buffer.len) {
-		return LexResult.EOF?;
+		return LEX_EOF?;
 	}
 
 	// forward whitespace
@@ -131,16 +131,16 @@ fn Tag! Lexer.next(&l) {
 				return STRING;
 			}
 		default:
-			return LexResult.MALFORMED?;
+			return LEX_MALFORMED?;
 	}
-	return LexResult.MALFORMED?;
+	return LEX_MALFORMED?;
 }
 
-fault LexResult {
-	UNEXPECTED_IN_NUM,
-	EOF,
-	MALFORMED,
-}
+faultdef
+	LEX_UNEXPECTED_IN_NUM,
+	LEX_EOF,
+	LEX_MALFORMED,
+;
 
 struct TestVector {
 	String input;

@@ -18,11 +18,11 @@ fn bool Foo.equals(self, Foo other) {
 
 fn void test_struct() @test {
 	Foo foo = json::from_str(Foo, allocator::temp(), "{ \"is_bar\": true, \"baz\": 3 }")!!;
-	test::eq(foo, Foo { .is_bar = true, .baz = 3 });
+	test::eq(foo, (Foo){ .is_bar = true, .baz = 3 });
 }
 
 fn void test_array() @test {
-	test::eq(json::from_str(int[], allocator::temp(), "[ 1, 2 ]")!!, int[] { 1, 2 });
+	test::eq(json::from_str(int[], allocator::temp(), "[ 1, 2 ]")!!, (int[]) { 1, 2 });
 }
 
 struct Bar {
@@ -30,14 +30,14 @@ struct Bar {
 }
 fn void test_soa() @test {
 	Bar bar = json::from_str(Bar, allocator::temp(), "{ \"bar\": [ 1, 2 ]}")!!;
-	test::eq(bar.bar, int[] { 1, 2, });
+	test::eq(bar.bar, (int[]) { 1, 2, });
 }
 
 fn void test_aos() @test {
 	Foo[] foos= json::from_str(Foo[], allocator::temp(), `[{"is_bar":true},{"is_bar":false}]`)!!;
 	// Foo[] doesn't implement equatable even when Foo does?
-	test::eq(foos[0], Foo { .is_bar = true });
-	test::eq(foos[1], Foo { .is_bar = false });
+	test::eq(foos[0], (Foo){ .is_bar = true });
+	test::eq(foos[1], (Foo){ .is_bar = false });
 }
 
 enum Baz {
@@ -45,7 +45,7 @@ enum Baz {
 	TWO,
 }
 
-fn void! Baz.parse_json(&self, Allocator alloc, Lexer* lex) {
+fn void? Baz.parse_json(&self, Allocator alloc, Lexer* lex) {
 	switch (lex.next()!!) {
 		case STRING:
 			switch (lex.token_slice) {
@@ -53,7 +53,7 @@ fn void! Baz.parse_json(&self, Allocator alloc, Lexer* lex) {
 				case "two": *self = Baz.TWO;
 			}
 		default:
-			return ParseResult.ERROR?;
+			return deserialize::PARSE_ERROR?;
 	}
 }
 

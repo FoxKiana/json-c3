@@ -11,15 +11,19 @@ fn void test_basic() @test {
 struct Foo {
 	bool is_bar;
 	int baz;
+	String bee;
 }
 
 fn bool Foo.equals(self, Foo other) {
-	return self.is_bar == other.is_bar && self.baz == other.baz;
+	return
+		self.is_bar == other.is_bar &&
+		self.baz == other.baz &&
+		self.bee == other.bee;
 }
 
 fn void test_struct() @test {
-	Foo foo = json::from_str(Foo, allocator::temp(), "{ \"is_bar\": true, \"baz\": 3 }")!!;
-	test::eq(foo, (Foo){ .is_bar = true, .baz = 3 });
+	Foo foo = json::from_str(Foo, allocator::temp(), `{ "is_bar": true, "baz": 3, "bee": "buzz" }`)!!;
+	test::eq(foo, (Foo){ .is_bar = true, .baz = 3, .bee = "buzz" });
 }
 
 fn void test_array() @test {

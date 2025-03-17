@@ -38,7 +38,7 @@ macro parse($Type, Allocator alloc, Lexer* lex) {
 	$switch ($Type):
 		$case String:
 			switch(first_tag) {
-				case STRING: return lex.token_slice;
+				case STRING: return (String)lex.token_slice;
 				default: return PARSE_ERROR?;
 			}
 		$case bool:

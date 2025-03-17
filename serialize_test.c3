@@ -58,3 +58,21 @@ fn void test_maybe_skip() @test {
 	};
 	test::eq(json::to_json(maybe_skip, allocator::temp()), `{"foo":1,"foo_noskip":1,"bar_noskip":null}`);
 }
+
+enum MyEnum {
+	FOO,
+	BAR,
+}
+fn void test_enum() @test {
+	MyEnum my = FOO;
+	test::eq(json::to_json(my, allocator::temp()), "FOO");
+}
+
+enum MyEnumAssoc : char (String json_repr) {
+	FOO = "foo",
+	BAR = "bar",
+}
+fn void test_enum_assoc() @test {
+	MyEnumAssoc my = BAR;
+	test::eq(json::to_json(my, allocator::temp()), "bar");
+}

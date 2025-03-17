@@ -30,6 +30,12 @@ macro void add_json(src, DString* dest) {
 
 	// Switch on complex types
 	$switch ($typeof(src).kindof):
+		$case TypeKind.ENUM:
+			$if ($defined($typeof(src).json_repr)):
+				dest.appendf(src.json_repr);
+			$else
+				dest.appendf(src.nameof);
+			$endif
 		$case TypeKind.STRUCT:
 			// Check Maybe first
 			$if ($typeof(src).nameof == "Maybe"):

@@ -15,6 +15,21 @@ macro parse($Type, Allocator alloc, Lexer* lex) {
 		return custom;
 	$endif
 
+	// Maybe needs to be checked before `lex.next()`
+	$switch ($Type.kindof):
+		$case TypeKind.STRUCT:
+			$if ($Type.nameof == "Maybe"):
+				// TODO can I name type in a variable?
+				if (try value = parse($typefrom($Type.membersof[0].typeid), alloc, lex)) {
+					return maybe::value{$typefrom($Type.membersof[0].typeid)}(value);
+				} else if (lex.token_slice == "null") {
+					return maybe::EMPTY{$typefrom($Type.membersof[0].typeid)};
+				} else {
+					return PARSE_ERROR?;
+				}
+			$endif
+	$endswitch
+
 	Tag first_tag = lex.next()!!;
 	// hack for array end, see below.
 	if (first_tag == ARRAY_END) return PARSE_ARRAY_END?;
@@ -42,6 +57,7 @@ macro parse($Type, Allocator alloc, Lexer* lex) {
 	// Switch on complex types
 	$switch ($Type.kindof):
 		$case TypeKind.STRUCT:
+			// If not maybe, then it's just a regular struct
 			$Type obj;
 			if (first_tag != OBJ_START) return PARSE_ERROR?;
 			// iterate through each parsed field, do linear search against

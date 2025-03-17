@@ -1,4 +1,5 @@
 module deserialize_test;
+import std::collections::maybe;
 import json;
 
 fn void test_basic() @test {
@@ -62,3 +63,25 @@ fn void test_custom() @test {
 	test::eq(baz, Baz.ONE);
 }
 
+fn void test_maybe_value() @test {
+	Maybe{int} x = json::from_str(Maybe{int}, allocator::temp(), `1`)!!;
+	Maybe{int} expected = maybe::value{int}(1);
+	test::eq(x.get()!!, expected.get()!!);
+}
+
+fn void test_maybe_null() @test {
+	Maybe{int} x = json::from_str(Maybe{int}, allocator::temp(), `null`)!!;
+	assert(!@ok(x.get()));
+}
+
+fn void test_maybe_wrong() @test {
+	assert(!@ok(json::from_str(Maybe{int}, allocator::temp(), `"wrong-value"`)));
+}
+
+struct MaybeStruct {
+	Maybe{int} inner;
+}
+fn void test_maybe_in_struct() @test {
+	MaybeStruct ms = json::from_str(MaybeStruct, allocator::temp(), `{"inner":1}`)!!;
+	test::eq(ms.inner.get()!!, 1);
+}

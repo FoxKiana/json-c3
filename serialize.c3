@@ -30,6 +30,17 @@ macro void add_json(src, DString* dest) {
 	// Switch on complex types
 	$switch ($typeof(src).kindof):
 		$case TypeKind.STRUCT:
+			// Check Maybe first
+			$if ($typeof(src).nameof == "Maybe"):
+				if (src.has_value) {
+					add_json(src.$eval($typeof(src).membersof[0].nameof), dest);
+				} else {
+					dest.appendf("null");
+				}
+				return;
+			$endif
+
+			// Not Maybe, just regular struct
 			dest.append("{");
 			$foreach $idx, $member : $typeof(src).membersof:
 				if ($idx > 0) {

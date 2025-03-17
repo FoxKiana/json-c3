@@ -1,4 +1,5 @@
 module serialize_test;
+import std::collections;
 import std::core::test;
 import json;
 
@@ -35,4 +36,9 @@ fn void test_aos() @test {
 	Foo[] foos = { { .is_bar = true, .baz = 1 }, { .is_bar = false, .baz = 2 } };
 	String expected = `[{"is_bar":true,"baz":1},{"is_bar":false,"baz":2}]`;
 	test::eq(json::to_json(foos, allocator::temp()), expected);
+}
+
+fn void test_maybe() @test {
+	Maybe{int} x = maybe::value{int}(1);
+	test::eq(json::to_json(x, allocator::temp()), "1");
 }

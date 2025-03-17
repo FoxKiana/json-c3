@@ -56,8 +56,17 @@ macro parse($Type, Allocator alloc, Lexer* lex) {
 
 	// Switch on complex types
 	$switch ($Type.kindof):
+		$case TypeKind.ENUM:
+			switch(first_tag) {
+				case STRING:
+					$foreach $value : $Type.values:
+						if ($value.nameof == lex.token_slice) {
+							return $value;
+						}
+					$endforeach
+				default: return PARSE_ERROR?;
+			}
 		$case TypeKind.STRUCT:
-			// If not maybe, then it's just a regular struct
 			$Type obj;
 			if (first_tag != OBJ_START) return PARSE_ERROR?;
 			// iterate through each parsed field, do linear search against

@@ -85,3 +85,12 @@ fn void test_maybe_in_struct() @test {
 	MaybeStruct ms = json::from_str(MaybeStruct, allocator::temp(), `{"inner":1}`)!!;
 	test::eq(ms.inner.get()!!, 1);
 }
+
+enum MyEnum {
+	FOO,
+	BAR,
+}
+fn void test_enum() @test {
+	MyEnum my = json::from_str(MyEnum, allocator::temp(), `"FOO"`)!!;
+	test::eq(my, MyEnum.FOO);
+}

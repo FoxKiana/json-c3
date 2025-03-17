@@ -107,3 +107,11 @@ fn void test_enum_associated_value() @test {
 	MyEnumAssoc my = json::from_str(MyEnumAssoc, allocator::temp(), `"bar"`)!!;
 	test::eq(my, MyEnumAssoc.BAR);
 }
+
+struct NestedMaybeStruct {
+	Maybe{Foo} foo;
+}
+fn void test_nested_maybe_struct() @test {
+	NestedMaybeStruct n = json::from_str(NestedMaybeStruct, allocator::temp(), `{"foo":{"is_bar":true}}`)!!;
+	test::eq(n.foo.get()!!, (Foo){ .is_bar = true, });
+}

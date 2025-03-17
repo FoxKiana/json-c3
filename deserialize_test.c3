@@ -94,3 +94,12 @@ fn void test_enum() @test {
 	MyEnum my = json::from_str(MyEnum, allocator::temp(), `"FOO"`)!!;
 	test::eq(my, MyEnum.FOO);
 }
+
+enum MyEnumAssoc : char (String json_repr) {
+	FOO = "foo",
+	BAR = "bar",
+}
+fn void test_enum_associated_value() @test {
+	MyEnumAssoc my = json::from_str(MyEnumAssoc, allocator::temp(), `"bar"`)!!;
+	test::eq(my, MyEnumAssoc.BAR);
+}

@@ -60,6 +60,11 @@ macro parse($Type, Allocator alloc, Lexer* lex) {
 			switch(first_tag) {
 				case STRING:
 					$foreach $value : $Type.values:
+						$if ($defined($Type.json_repr)):
+							if ($value.json_repr == lex.token_slice) {
+								return $value;
+							}
+						$endif
 						if ($value.nameof == lex.token_slice) {
 							return $value;
 						}

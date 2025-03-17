@@ -42,3 +42,19 @@ fn void test_maybe() @test {
 	Maybe{int} x = maybe::value{int}(1);
 	test::eq(json::to_json(x, allocator::temp()), "1");
 }
+
+struct MaybeSkip {
+	Maybe{int} foo @tag("json", "skip_empty");
+	Maybe{int} bar @tag("json", "skip_empty");
+	Maybe{int} foo_noskip;
+	Maybe{int} bar_noskip;
+}
+fn void test_maybe_skip() @test {
+	MaybeSkip maybe_skip = {
+		.foo = maybe::value{int}(1),
+		.bar = maybe::EMPTY{int},
+		.foo_noskip = maybe::value{int}(1),
+		.bar_noskip = maybe::EMPTY{int},
+	};
+	test::eq(json::to_json(maybe_skip, allocator::temp()), `{"foo":1,"foo_noskip":1,"bar_noskip":null}`);
+}

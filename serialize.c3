@@ -1,5 +1,6 @@
 module json::serialize;
 import std::core;
+import std::io;
 
 // TODO handle "empty" fields.
 // - empty lists
@@ -42,12 +43,38 @@ macro void add_json(src, DString* dest) {
 
 			// Not Maybe, just regular struct
 			dest.append("{");
-			$foreach $idx, $member : $typeof(src).membersof:
-				if ($idx > 0) {
-					dest.append(",");
-				}
-				dest.appendf(`"%s":`, $member.nameof);
-				add_json(src.$eval($member.nameof), dest);
+			int members_written;
+			$foreach $member : $typeof(src).membersof:
+				// check for @tag("json", "skip_empty")
+				bool $memb_is_maybe_skip = false;
+				$if ($typefrom($member.typeid).nameof == "Maybe"):
+					$if ($member.has_tagof("json")):
+						$if ($member.tagof("json") == "skip_empty"):
+							$memb_is_maybe_skip = true;
+						$endif
+					$endif
+				$endif
+
+				// TODO clean up this logic. compile time and runtime interaction is a bit messy
+				$if ($memb_is_maybe_skip):
+					if (!src.$eval($member.nameof).has_value) {
+					// do nothing
+					} else {
+						if (members_written > 0) {
+							dest.append(",");
+						}
+						dest.appendf(`"%s":`, $member.nameof);
+						add_json(src.$eval($member.nameof), dest);
+						members_written += 1;
+					}
+				$else
+					if (members_written > 0) {
+						dest.append(",");
+					}
+					dest.appendf(`"%s":`, $member.nameof);
+					add_json(src.$eval($member.nameof), dest);
+					members_written += 1;
+				$endif
 			$endforeach
 			dest.append("}");
 			return;

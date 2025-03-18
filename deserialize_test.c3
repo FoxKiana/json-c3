@@ -1,5 +1,6 @@
 module deserialize_test;
 import std::collections::maybe;
+import std::io;
 import json;
 
 fn void test_basic() @test {
@@ -114,4 +115,16 @@ struct NestedMaybeStruct {
 fn void test_nested_maybe_struct() @test {
 	NestedMaybeStruct n = json::from_str(NestedMaybeStruct, allocator::temp(), `{"foo":{"is_bar":true}}`)!!;
 	test::eq(n.foo.get()!!, (Foo){ .is_bar = true, });
+}
+
+struct StructWithUnion {
+	union {
+		Foo foo;
+	}
+}
+fn void test_struct_with_union() @test {
+	StructWithUnion? n = json::from_str(StructWithUnion, allocator::temp(), `{"foo":{"id_bar":true}}`);
+	if (catch err = n) {
+		test::eq(err, deserialize::UNION_NOT_SUPPORTED);
+	}
 }

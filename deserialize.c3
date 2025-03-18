@@ -82,10 +82,16 @@ macro parse($Type, Allocator alloc, Lexer* lex) {
 				if (tag != FIELD_NAME) return PARSE_ERROR?;
 				String field_name = (String)lex.token_slice;
 				$foreach $member : $Type.membersof:
-					if (field_name == $member.nameof) {
-						obj.$eval($member.nameof) = parse($typefrom($member.typeid), alloc, lex)!!;
-						// break; no break in compile-time foreach?
-					}
+					$if ($member.kindof == TypeKind.UNION):
+						return UNION_NOT_SUPPORTED?;
+					$else
+						if (field_name == $member.nameof) {
+							io::printfn("member: %s %s", $member.nameof, $member.kindof);
+							obj.$eval($member.nameof) = parse($typefrom($member.typeid), alloc, lex)!!;
+							// break; no break in compile-time foreach?
+						}
+					$endif
+
 				$endforeach
 			}
 			return obj;
@@ -107,6 +113,8 @@ macro parse($Type, Allocator alloc, Lexer* lex) {
 				}
 				return arr.to_array(alloc);
 			};
+		$case TypeKind.UNION:
+			return UNION_NOT_SUPPORTED?;
 	$endswitch
 
 	return PARSE_ERROR?;
@@ -114,5 +122,6 @@ macro parse($Type, Allocator alloc, Lexer* lex) {
 
 faultdef
 	PARSE_ERROR,
+	UNION_NOT_SUPPORTED,
 	PARSE_ARRAY_END, // TODO fix this hack
 ;

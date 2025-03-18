@@ -65,7 +65,7 @@ enum MyEnum {
 }
 fn void test_enum() @test {
 	MyEnum my = FOO;
-	test::eq(json::to_json(my, allocator::temp())!!, "FOO");
+	test::eq(json::to_json(my, allocator::temp())!!, `"FOO"`);
 }
 
 enum MyEnumAssoc : char (String json_repr) {
@@ -74,7 +74,7 @@ enum MyEnumAssoc : char (String json_repr) {
 }
 fn void test_enum_assoc() @test {
 	MyEnumAssoc my = BAR;
-	test::eq(json::to_json(my, allocator::temp())!!, "bar");
+	test::eq(json::to_json(my, allocator::temp())!!, `"bar"`);
 }
 
 struct StructWithUnion {

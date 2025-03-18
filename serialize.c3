@@ -1,12 +1,5 @@
 module json::serialize;
 import std::core;
-import std::io;
-
-// TODO handle "empty" fields.
-// - empty lists
-// - Maybe type?
-
-// TODO handle custom serialization
 
 macro void? add_json(src, DString* dest) {
 	$if ($defined($typeof(src).to_json)):

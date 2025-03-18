@@ -1,7 +1,6 @@
 module json::deserialize;
 import std::collections;
 import std::core;
-import std::io;
 import json::lex;
 
 macro parse($Type, Allocator alloc, Lexer* lex) {
@@ -86,7 +85,6 @@ macro parse($Type, Allocator alloc, Lexer* lex) {
 						return UNION_NOT_SUPPORTED?;
 					$else
 						if (field_name == $member.nameof) {
-							io::printfn("member: %s %s", $member.nameof, $member.kindof);
 							obj.$eval($member.nameof) = parse($typefrom($member.typeid), alloc, lex)!!;
 							// break; no break in compile-time foreach?
 						}

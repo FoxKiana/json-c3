@@ -4,9 +4,9 @@ import std::core::test;
 import json;
 
 fn void test_basic() @test {
-	test::eq(json::to_json(true, allocator::temp()), "true");
-	test::eq(json::to_json("one", allocator::temp()), `"one"`);
-	test::eq(json::to_json(1, allocator::temp()), "1");
+	test::eq(json::to_json(true, allocator::temp())!!, "true");
+	test::eq(json::to_json("one", allocator::temp())!!, `"one"`);
+	test::eq(json::to_json(1, allocator::temp())!!, "1");
 }
 
 struct Foo {
@@ -16,12 +16,12 @@ struct Foo {
 
 fn void test_struct() @test {
 	Foo foo = { .is_bar = true, .baz = 1 };
-	test::eq(json::to_json(foo, allocator::temp()), `{"is_bar":true,"baz":1}`);
+	test::eq(json::to_json(foo, allocator::temp())!!, `{"is_bar":true,"baz":1}`);
 }
 
 fn void test_array() @test {
 	int[] xs = { 1, 2 };
-	test::eq(json::to_json(xs, allocator::temp()), "[1,2]");
+	test::eq(json::to_json(xs, allocator::temp())!!, "[1,2]");
 }
 
 struct Bar {
@@ -29,18 +29,18 @@ struct Bar {
 }
 fn void test_soa() @test {
 	Bar bar = { .bar = { 1, 2 } };
-	test::eq(json::to_json(bar, allocator::temp()), `{"bar":[1,2]}`);
+	test::eq(json::to_json(bar, allocator::temp())!!, `{"bar":[1,2]}`);
 }
 
 fn void test_aos() @test {
 	Foo[] foos = { { .is_bar = true, .baz = 1 }, { .is_bar = false, .baz = 2 } };
 	String expected = `[{"is_bar":true,"baz":1},{"is_bar":false,"baz":2}]`;
-	test::eq(json::to_json(foos, allocator::temp()), expected);
+	test::eq(json::to_json(foos, allocator::temp())!!, expected);
 }
 
 fn void test_maybe() @test {
 	Maybe{int} x = maybe::value{int}(1);
-	test::eq(json::to_json(x, allocator::temp()), "1");
+	test::eq(json::to_json(x, allocator::temp())!!, "1");
 }
 
 struct MaybeSkip {
@@ -56,7 +56,7 @@ fn void test_maybe_skip() @test {
 		.foo_noskip = maybe::value{int}(1),
 		.bar_noskip = maybe::EMPTY{int},
 	};
-	test::eq(json::to_json(maybe_skip, allocator::temp()), `{"foo":1,"foo_noskip":1,"bar_noskip":null}`);
+	test::eq(json::to_json(maybe_skip, allocator::temp())!!, `{"foo":1,"foo_noskip":1,"bar_noskip":null}`);
 }
 
 enum MyEnum {
@@ -65,7 +65,7 @@ enum MyEnum {
 }
 fn void test_enum() @test {
 	MyEnum my = FOO;
-	test::eq(json::to_json(my, allocator::temp()), "FOO");
+	test::eq(json::to_json(my, allocator::temp())!!, "FOO");
 }
 
 enum MyEnumAssoc : char (String json_repr) {
@@ -74,5 +74,17 @@ enum MyEnumAssoc : char (String json_repr) {
 }
 fn void test_enum_assoc() @test {
 	MyEnumAssoc my = BAR;
-	test::eq(json::to_json(my, allocator::temp()), "bar");
+	test::eq(json::to_json(my, allocator::temp())!!, "bar");
+}
+
+struct StructWithUnion {
+	union {
+		Foo foo;
+	}
+}
+fn void test_struct_with_union() @test {
+	StructWithUnion s = {};
+	if (catch err = json::to_json(s, allocator::temp())) {
+		test::eq(err, serialize::UNION_NOT_SUPPORTED);
+	}
 }

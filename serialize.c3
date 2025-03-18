@@ -8,7 +8,7 @@ import std::io;
 
 // TODO handle custom serialization
 
-macro void add_json(src, DString* dest) {
+macro void? add_json(src, DString* dest) {
 	// Switch on primitives
 	$switch ($typeof(src)):
 		$case String:
@@ -40,7 +40,7 @@ macro void add_json(src, DString* dest) {
 			// Check Maybe first
 			$if ($typeof(src).nameof == "Maybe"):
 				if (src.has_value) {
-					add_json(src.$eval($typeof(src).membersof[0].nameof), dest);
+					add_json(src.$eval($typeof(src).membersof[0].nameof), dest)!!;
 				} else {
 					dest.appendf("null");
 				}
@@ -51,35 +51,39 @@ macro void add_json(src, DString* dest) {
 			dest.append("{");
 			int members_written;
 			$foreach $member : $typeof(src).membersof:
-				// check for @tag("json", "skip_empty")
-				bool $memb_is_maybe_skip = false;
-				$if ($typefrom($member.typeid).nameof == "Maybe"):
-					$if ($member.has_tagof("json")):
-						$if ($member.tagof("json") == "skip_empty"):
-							$memb_is_maybe_skip = true;
+				$if ($member.kindof == TypeKind.UNION):
+					return UNION_NOT_SUPPORTED?;
+				$else
+					// check for @tag("json", "skip_empty")
+					bool $memb_is_maybe_skip = false;
+					$if ($typefrom($member.typeid).nameof == "Maybe"):
+						$if ($member.has_tagof("json")):
+							$if ($member.tagof("json") == "skip_empty"):
+								$memb_is_maybe_skip = true;
+							$endif
 						$endif
 					$endif
-				$endif
 
-				// TODO clean up this logic. compile time and runtime interaction is a bit messy
-				$if ($memb_is_maybe_skip):
-					if (!src.$eval($member.nameof).has_value) {
-					// do nothing
-					} else {
+					// TODO clean up this logic. compile time and runtime interaction is a bit messy
+					$if ($memb_is_maybe_skip):
+						if (!src.$eval($member.nameof).has_value) {
+						// do nothing
+						} else {
+							if (members_written > 0) {
+								dest.append(",");
+							}
+							dest.appendf(`"%s":`, $member.nameof);
+							add_json(src.$eval($member.nameof), dest)!!;
+							members_written += 1;
+						}
+					$else
 						if (members_written > 0) {
 							dest.append(",");
 						}
 						dest.appendf(`"%s":`, $member.nameof);
-						add_json(src.$eval($member.nameof), dest);
+						add_json(src.$eval($member.nameof), dest)!!;
 						members_written += 1;
-					}
-				$else
-					if (members_written > 0) {
-						dest.append(",");
-					}
-					dest.appendf(`"%s":`, $member.nameof);
-					add_json(src.$eval($member.nameof), dest);
-					members_written += 1;
+					$endif
 				$endif
 			$endforeach
 			dest.append("}");
@@ -90,11 +94,15 @@ macro void add_json(src, DString* dest) {
 				if (idx > 0) {
 					dest.append(",");
 				}
-				add_json(element, dest);
+				add_json(element, dest)!!;
 			}
 			dest.append("]");
 			return;
+		$case TypeKind.UNION:
+			return UNION_NOT_SUPPORTED?;
 	$endswitch
 
 	// TODO add error here if type not supported?
 }
+
+faultdef UNION_NOT_SUPPORTED;

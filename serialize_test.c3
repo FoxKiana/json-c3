@@ -88,3 +88,17 @@ fn void test_struct_with_union() @test {
 		test::eq(err, serialize::UNION_NOT_SUPPORTED);
 	}
 }
+
+struct StructWithUnionCustom {
+	union {
+		Foo foo;
+	}
+}
+fn void? StructWithUnionCustom.to_json(self, DString* dest) {
+	// Unions not supported, must handle each variant manually
+	serialize::add_json(self.foo, dest)!;
+}
+fn void test_struct_with_union_custom() @test {
+	StructWithUnionCustom s = { .foo = { .is_bar = true} };
+	test::eq(json::to_json(s, allocator::temp())!!, `{"is_bar":true,"baz":0}`);
+}

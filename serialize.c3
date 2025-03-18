@@ -9,6 +9,11 @@ import std::io;
 // TODO handle custom serialization
 
 macro void? add_json(src, DString* dest) {
+	$if ($defined($typeof(src).to_json)):
+		src.to_json(dest)!;
+		return;
+	$endif
+
 	// Switch on primitives
 	$switch ($typeof(src)):
 		$case String:

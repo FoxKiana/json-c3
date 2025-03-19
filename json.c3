@@ -15,7 +15,7 @@ macro from_str($Type, Allocator alloc, String s) {
 }
 
 macro String? to_json(expr, Allocator alloc) {
-	@pool(alloc) {
+	@pool() {
 		DString s;
 		s.tinit();
 		serialize::add_json(expr, &s)!;

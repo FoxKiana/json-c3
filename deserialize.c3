@@ -95,7 +95,7 @@ macro parse($Type, Allocator alloc, Lexer* lex) {
 			return obj;
 		$case TypeKind.SLICE:
 			if (first_tag != ARRAY_START) return PARSE_ERROR?;
-			@pool(alloc) {
+			@pool() {
 				List{$typefrom($Type.inner)} arr;
 				arr.tinit();
 

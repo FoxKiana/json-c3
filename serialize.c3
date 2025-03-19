@@ -47,6 +47,11 @@ macro void? add_json(src, DString* dest) {
 				return;
 			$endif
 
+			$if ($typeof(src).nameof == "HashMap"):
+				add_hashmap(src, dest)!!;
+				return;
+			$endif
+
 			// Not Maybe, just regular struct
 			dest.append("{");
 			int members_written;
@@ -105,4 +110,29 @@ macro void? add_json(src, DString* dest) {
 	// TODO add error here if type not supported?
 }
 
-faultdef UNION_NOT_SUPPORTED;
+// Using iter; with the @each_entry, didn't like using var
+// in the macro body call.
+macro void? add_hashmap(src, DString* dest) {
+	$if ($typeof(src).nameof != "HashMap"):
+		return EXPECTED_HASHMAP?;
+	$endif
+
+	dest.append("{");
+	usz idx;
+	var iter = src.iter();
+	while (idx < iter.len()) {
+		var entry = iter.get(idx);
+		var key = entry.key;
+		var value = entry.value;
+		if (idx > 0) {
+			dest.append(",");
+		}
+		add_json(key, dest)!;
+		dest.append(":");
+		add_json(value, dest)!;
+		idx += 1;
+	};
+	dest.append("}");
+}
+
+faultdef UNION_NOT_SUPPORTED, EXPECTED_HASHMAP;

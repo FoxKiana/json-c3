@@ -102,3 +102,10 @@ fn void test_struct_with_union_custom() @test {
 	StructWithUnionCustom s = { .foo = { .is_bar = true} };
 	test::eq(json::to_json(s, allocator::temp())!!, `{"is_bar":true,"baz":0}`);
 }
+
+fn void test_hashmap() @test {
+	HashMap{String,int} s;
+	s.tinit();
+	s.set("one", 1);
+	test::eq(json::to_json(s, allocator::temp())!!, `{"one":1}`);
+}

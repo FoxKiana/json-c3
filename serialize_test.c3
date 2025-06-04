@@ -17,11 +17,6 @@ struct Foo {
 
 fn void test_struct() @test {
 	Foo foo = { .is_bar = true, .baz = 1 };
-
-    io::printn("------------");
-    io::printn(json::to_json(foo, mem)!!);
-    io::printn("------------");
-
 	test::eq(json::to_json(foo, allocator::temp())!!, `{"is_bar":true,"baz":1}`);
 }
 
@@ -30,33 +25,6 @@ struct Complex
     String   s;
     String[] s1;
     Foo[]    f;
-}
-
-fn void test_struct_2() @test
-{
-    Complex c =
-    {
-        .s  = "Complex",
-        .s1 =
-        {
-            "Line1",
-            "Line2"
-        },
-        .f  =
-        {
-            {
-                true,
-                5
-            },
-            {
-                false, 42
-            }
-        }
-    };
-
-    io::printn(json::to_json(c, allocator::temp())!!);
-
-    test::eq(json::to_json(c, allocator::temp())!!, "TEST");
 }
 
 fn void test_array() @test {
@@ -134,9 +102,9 @@ struct StructWithUnionCustom {
 		Foo foo;
 	}
 }
-fn void? StructWithUnionCustom.to_json(self, DString* dest) {
+fn void? StructWithUnionCustom.to_json(self, DString* dest, bool pretty, int indent) {
 	// Unions not supported, must handle each variant manually
-	serialize::add_json(self.foo, dest)!;
+	serialize::add_json(self.foo, dest, pretty, indent)!;
 }
 fn void test_struct_with_union_custom() @test {
 	StructWithUnionCustom s = { .foo = { .is_bar = true} };

@@ -1,11 +1,11 @@
 module json::serialize;
-import std::core;
+import std::core, std::io;
 
 const SPACES = 4;
 
-macro void? add_json(src, DString* dest, int indent = 0) {
+macro void? add_json(src, DString* dest, bool pretty = false, int indent = 0) {
 	$if ($defined($typeof(src).to_json)):
-		src.to_json(dest)!;
+		src.to_json(dest, pretty, indent)!;
 		return;
 	$endif
 
@@ -42,7 +42,7 @@ macro void? add_json(src, DString* dest, int indent = 0) {
 			// Check Maybe first
 			$if ($typeof(src).nameof == "Maybe"):
 				if (src.has_value) {
-					add_json(src.$eval($typeof(src).membersof[0].nameof), dest)!!;
+					add_json(src.$eval($typeof(src).membersof[0].nameof), dest, pretty, indent)!!;
 				} else {
 					dest.appendf("null");
 				}
@@ -50,12 +50,13 @@ macro void? add_json(src, DString* dest, int indent = 0) {
 			$endif
 
 			$if ($typeof(src).nameof == "HashMap"):
-				add_hashmap(src, dest)!!;
+				add_hashmap(src, dest, pretty, indent)!!;
 				return;
 			$endif
 
 			// Not Maybe, just regular struct
-			dest.append("{\n");
+			dest.append("{");
+            if (pretty) dest.append("\n");
             indent++;
 			int members_written;
 			$foreach $member : $typeof(src).membersof:
@@ -78,56 +79,77 @@ macro void? add_json(src, DString* dest, int indent = 0) {
 						// do nothing
 						} else {
 							if (members_written > 0) {
-								dest.append(",\n");
+								dest.append(",");
+                                if (pretty) dest.append("\n");
 							}
-                            for (int i = 0; i < indent * SPACES; i++)
+                            if (pretty)
                             {
-                                dest.append(" ");
+                                for (int i = 0; i < indent * SPACES; i++)
+                                {
+                                    dest.append(" ");
+                                }
                             }
-							dest.appendf(`"%s": `, $member.nameof);
-							add_json(src.$eval($member.nameof), dest, indent)!!;
+							dest.appendf(`"%s":`, $member.nameof);
+                            if (pretty) dest.append(" ");
+							add_json(src.$eval($member.nameof), dest, pretty, indent)!!;
 							members_written += 1;
 						}
 					$else
 						if (members_written > 0) {
-							dest.append(",\n");
+							dest.append(",");
+                            if (pretty) dest.append("\n");
 						}
-                        for (int i = 0; i < indent * SPACES; i++)
+                        if (pretty)
                         {
-                            dest.append(" ");
+                            for (int i = 0; i < indent * SPACES; i++)
+                            {
+                                dest.append(" ");
+                            }
                         }
-						dest.appendf(`"%s": `, $member.nameof);
-						add_json(src.$eval($member.nameof), dest, indent)!!;
+						dest.appendf(`"%s":`, $member.nameof);
+                        if (pretty) dest.append(" ");
+						add_json(src.$eval($member.nameof), dest, pretty, indent)!!;
 						members_written += 1;
 					$endif
 				$endif
 			$endforeach
-			dest.append("\n");
+            if (pretty) dest.append("\n");
             indent--;
-            for (int i = 0; i < indent * SPACES; i++)
+            if (pretty)
             {
-                dest.append(" ");
-            }
-            dest.append("}");
-			return;
-		$case TypeKind.SLICE:
-			dest.append("[\n");
-            indent++;
-			foreach (idx, element : src) {
-				if (idx > 0) {
-					dest.append(",\n");
-				}
                 for (int i = 0; i < indent * SPACES; i++)
                 {
                     dest.append(" ");
                 }
-				add_json(element, dest, indent)!!;
+            }
+            dest.append("}");
+			return;
+		$case TypeKind.SLICE:
+			dest.append("[");
+            if (pretty) dest.append("\n");
+            indent++;
+			foreach (idx, element : src) {
+				if (idx > 0) {
+					dest.append(",");
+                    if (pretty) dest.append("\n");
+				}
+                if (pretty)
+                {
+                    for (int i = 0; i < indent * SPACES; i++)
+                    {
+                        dest.append(" ");
+                    }
+                }
+				add_json(element, dest, pretty, indent)!!;
 			}
-			dest.append("\n");
+            if (pretty) dest.append("\n");
             indent--;
-            for (int i = 0; i < indent * SPACES; i++)
+            if (pretty)
             {
-                dest.append(" ");
+                for (int i = 0; i < indent * SPACES; i++)
+                {
+                    dest.append(" ");
+                }
             }
             dest.append("]");
             return;
@@ -140,12 +162,13 @@ macro void? add_json(src, DString* dest, int indent = 0) {
 
 // Using iter; with the @each_entry, didn't like using var
 // in the macro body call.
-macro void? add_hashmap(src, DString* dest) {
+macro void? add_hashmap(src, DString* dest, bool pretty, int indent) {
 	$if ($typeof(src).nameof != "HashMap"):
 		return EXPECTED_HASHMAP?;
 	$endif
 
-	dest.append("{\n");
+	dest.append("{");
+    if (pretty) dest.append("\n");
 	usz idx;
 	var iter = src.iter();
 	while (idx < iter.len()) {
@@ -153,14 +176,25 @@ macro void? add_hashmap(src, DString* dest) {
 		var key = entry.key;
 		var value = entry.value;
 		if (idx > 0) {
-			dest.append(",\n");
+			dest.append(",");
+            if (pretty) dest.append("\n");
 		}
-		add_json(key, dest)!;
-		dest.append(": ");
-		add_json(value, dest)!;
+        if (pretty)
+        {
+            for (int i = 0; i < indent * SPACES; i++)
+            {
+                dest.append(" ");
+            }
+        }
+		add_json(key, dest, pretty, indent)!;
+		dest.append(":");
+        if (pretty) dest.append(" ");
+		add_json(value, dest, pretty, indent)!;
 		idx += 1;
 	};
-	dest.append("\n}\n");
+    if (pretty) dest.append("\n");
+	dest.append("}");
+    if (pretty) dest.append("\n");
 }
 
 faultdef UNION_NOT_SUPPORTED, EXPECTED_HASHMAP;

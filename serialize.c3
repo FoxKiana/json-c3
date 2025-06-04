@@ -1,7 +1,9 @@
 module json::serialize;
 import std::core;
 
-macro void? add_json(src, DString* dest) {
+const SPACES = 4;
+
+macro void? add_json(src, DString* dest, int indent = 0) {
 	$if ($defined($typeof(src).to_json)):
 		src.to_json(dest)!;
 		return;
@@ -53,7 +55,8 @@ macro void? add_json(src, DString* dest) {
 			$endif
 
 			// Not Maybe, just regular struct
-			dest.append("{");
+			dest.append("{\n");
+            indent++;
 			int members_written;
 			$foreach $member : $typeof(src).membersof:
 				$if ($member.kindof == TypeKind.UNION):
@@ -75,34 +78,59 @@ macro void? add_json(src, DString* dest) {
 						// do nothing
 						} else {
 							if (members_written > 0) {
-								dest.append(",");
+								dest.append(",\n");
 							}
-							dest.appendf(`"%s":`, $member.nameof);
-							add_json(src.$eval($member.nameof), dest)!!;
+                            for (int i = 0; i < indent * SPACES; i++)
+                            {
+                                dest.append(" ");
+                            }
+							dest.appendf(`"%s": `, $member.nameof);
+							add_json(src.$eval($member.nameof), dest, indent)!!;
 							members_written += 1;
 						}
 					$else
 						if (members_written > 0) {
-							dest.append(",");
+							dest.append(",\n");
 						}
-						dest.appendf(`"%s":`, $member.nameof);
-						add_json(src.$eval($member.nameof), dest)!!;
+                        for (int i = 0; i < indent * SPACES; i++)
+                        {
+                            dest.append(" ");
+                        }
+						dest.appendf(`"%s": `, $member.nameof);
+						add_json(src.$eval($member.nameof), dest, indent)!!;
 						members_written += 1;
 					$endif
 				$endif
 			$endforeach
-			dest.append("}");
+			dest.append("\n");
+            indent--;
+            for (int i = 0; i < indent * SPACES; i++)
+            {
+                dest.append(" ");
+            }
+            dest.append("}");
 			return;
 		$case TypeKind.SLICE:
-			dest.append("[");
+			dest.append("[\n");
+            indent++;
 			foreach (idx, element : src) {
 				if (idx > 0) {
-					dest.append(",");
+					dest.append(",\n");
 				}
-				add_json(element, dest)!!;
+                for (int i = 0; i < indent * SPACES; i++)
+                {
+                    dest.append(" ");
+                }
+				add_json(element, dest, indent)!!;
 			}
-			dest.append("]");
-			return;
+			dest.append("\n");
+            indent--;
+            for (int i = 0; i < indent * SPACES; i++)
+            {
+                dest.append(" ");
+            }
+            dest.append("]");
+            return;
 		$case TypeKind.UNION:
 			return UNION_NOT_SUPPORTED?;
 	$endswitch
@@ -117,7 +145,7 @@ macro void? add_hashmap(src, DString* dest) {
 		return EXPECTED_HASHMAP?;
 	$endif
 
-	dest.append("{");
+	dest.append("{\n");
 	usz idx;
 	var iter = src.iter();
 	while (idx < iter.len()) {
@@ -125,14 +153,14 @@ macro void? add_hashmap(src, DString* dest) {
 		var key = entry.key;
 		var value = entry.value;
 		if (idx > 0) {
-			dest.append(",");
+			dest.append(",\n");
 		}
 		add_json(key, dest)!;
-		dest.append(":");
+		dest.append(": ");
 		add_json(value, dest)!;
 		idx += 1;
 	};
-	dest.append("}");
+	dest.append("\n}\n");
 }
 
 faultdef UNION_NOT_SUPPORTED, EXPECTED_HASHMAP;

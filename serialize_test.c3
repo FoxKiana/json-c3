@@ -2,6 +2,7 @@ module serialize_test;
 import std::collections;
 import std::core::test;
 import json;
+import std::io;
 
 fn void test_basic() @test {
 	test::eq(json::to_json(true, allocator::temp())!!, "true");
@@ -16,7 +17,46 @@ struct Foo {
 
 fn void test_struct() @test {
 	Foo foo = { .is_bar = true, .baz = 1 };
+
+    io::printn("------------");
+    io::printn(json::to_json(foo, mem)!!);
+    io::printn("------------");
+
 	test::eq(json::to_json(foo, allocator::temp())!!, `{"is_bar":true,"baz":1}`);
+}
+
+struct Complex
+{
+    String   s;
+    String[] s1;
+    Foo[]    f;
+}
+
+fn void test_struct_2() @test
+{
+    Complex c =
+    {
+        .s  = "Complex",
+        .s1 =
+        {
+            "Line1",
+            "Line2"
+        },
+        .f  =
+        {
+            {
+                true,
+                5
+            },
+            {
+                false, 42
+            }
+        }
+    };
+
+    io::printn(json::to_json(c, allocator::temp())!!);
+
+    test::eq(json::to_json(c, allocator::temp())!!, "TEST");
 }
 
 fn void test_array() @test {

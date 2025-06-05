@@ -1,11 +1,9 @@
 module json::serialize;
-import std::core, std::io;
+import std::core;
 
-const SPACES = 4;
-
-macro void? add_json(src, DString* dest, bool pretty = false, int indent = 0) {
+macro void? add_json(src, DString* dest, bool pretty = false, int spaces = 4, int indent = 0) {
 	$if ($defined($typeof(src).to_json)):
-		src.to_json(dest, pretty, indent)!;
+		src.to_json(dest, pretty, spaces, indent)!;
 		return;
 	$endif
 
@@ -42,7 +40,7 @@ macro void? add_json(src, DString* dest, bool pretty = false, int indent = 0) {
 			// Check Maybe first
 			$if ($typeof(src).nameof == "Maybe"):
 				if (src.has_value) {
-					add_json(src.$eval($typeof(src).membersof[0].nameof), dest, pretty, indent)!!;
+					add_json(src.$eval($typeof(src).membersof[0].nameof), dest, pretty, spaces, indent)!!;
 				} else {
 					dest.appendf("null");
 				}
@@ -50,7 +48,7 @@ macro void? add_json(src, DString* dest, bool pretty = false, int indent = 0) {
 			$endif
 
 			$if ($typeof(src).nameof == "HashMap"):
-				add_hashmap(src, dest, pretty, indent)!!;
+				add_hashmap(src, dest, pretty, spaces, indent)!!;
 				return;
 			$endif
 
@@ -84,14 +82,14 @@ macro void? add_json(src, DString* dest, bool pretty = false, int indent = 0) {
 							}
                             if (pretty)
                             {
-                                for (int i = 0; i < indent * SPACES; i++)
+                                for (int i = 0; i < indent * spaces; i++)
                                 {
                                     dest.append(" ");
                                 }
                             }
 							dest.appendf(`"%s":`, $member.nameof);
                             if (pretty) dest.append(" ");
-							add_json(src.$eval($member.nameof), dest, pretty, indent)!!;
+							add_json(src.$eval($member.nameof), dest, pretty, spaces, indent)!!;
 							members_written += 1;
 						}
 					$else
@@ -101,14 +99,14 @@ macro void? add_json(src, DString* dest, bool pretty = false, int indent = 0) {
 						}
                         if (pretty)
                         {
-                            for (int i = 0; i < indent * SPACES; i++)
+                            for (int i = 0; i < indent * spaces; i++)
                             {
                                 dest.append(" ");
                             }
                         }
 						dest.appendf(`"%s":`, $member.nameof);
                         if (pretty) dest.append(" ");
-						add_json(src.$eval($member.nameof), dest, pretty, indent)!!;
+						add_json(src.$eval($member.nameof), dest, pretty, spaces, indent)!!;
 						members_written += 1;
 					$endif
 				$endif
@@ -117,7 +115,7 @@ macro void? add_json(src, DString* dest, bool pretty = false, int indent = 0) {
             indent--;
             if (pretty)
             {
-                for (int i = 0; i < indent * SPACES; i++)
+                for (int i = 0; i < indent * spaces; i++)
                 {
                     dest.append(" ");
                 }
@@ -135,18 +133,18 @@ macro void? add_json(src, DString* dest, bool pretty = false, int indent = 0) {
 				}
                 if (pretty)
                 {
-                    for (int i = 0; i < indent * SPACES; i++)
+                    for (int i = 0; i < indent * spaces; i++)
                     {
                         dest.append(" ");
                     }
                 }
-				add_json(element, dest, pretty, indent)!!;
+				add_json(element, dest, pretty, spaces, indent)!!;
 			}
             if (pretty) dest.append("\n");
             indent--;
             if (pretty)
             {
-                for (int i = 0; i < indent * SPACES; i++)
+                for (int i = 0; i < indent * spaces; i++)
                 {
                     dest.append(" ");
                 }
@@ -162,7 +160,7 @@ macro void? add_json(src, DString* dest, bool pretty = false, int indent = 0) {
 
 // Using iter; with the @each_entry, didn't like using var
 // in the macro body call.
-macro void? add_hashmap(src, DString* dest, bool pretty, int indent) {
+macro void? add_hashmap(src, DString* dest, bool pretty, int spaces, int indent) {
 	$if ($typeof(src).nameof != "HashMap"):
 		return EXPECTED_HASHMAP?;
 	$endif
@@ -181,15 +179,15 @@ macro void? add_hashmap(src, DString* dest, bool pretty, int indent) {
 		}
         if (pretty)
         {
-            for (int i = 0; i < indent * SPACES; i++)
+            for (int i = 0; i < indent * spaces; i++)
             {
                 dest.append(" ");
             }
         }
-		add_json(key, dest, pretty, indent)!;
+		add_json(key, dest, pretty, spaces, indent)!;
 		dest.append(":");
         if (pretty) dest.append(" ");
-		add_json(value, dest, pretty, indent)!;
+		add_json(value, dest, pretty, spaces, indent)!;
 		idx += 1;
 	};
     if (pretty) dest.append("\n");

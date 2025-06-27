@@ -94,9 +94,9 @@ struct StructWithUnionCustom {
 		Foo foo;
 	}
 }
-fn void? StructWithUnionCustom.to_json(self, DString* dest, bool pretty, int spaces, int indent) {
+fn void? StructWithUnionCustom.to_json(self, DString* dest, int indent, int indent_level) {
 	// Unions not supported, must handle each variant manually
-	serialize::add_json(self.foo, dest, pretty, spaces, indent)!;
+	serialize::add_json(self.foo, dest, indent, indent_level)!;
 }
 fn void test_struct_with_union_custom() @test {
 	StructWithUnionCustom s = { .foo = { .is_bar = true} };

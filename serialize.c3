@@ -80,10 +80,8 @@ macro void? add_json(src, DString* dest, bool pretty = false, int spaces = 4, in
 								dest.append(",");
                                 if (pretty) dest.append("\n");
 							}
-                            if (pretty)
-                            {
-                                for (int i = 0; i < indent * spaces; i++)
-                                {
+                            if (pretty) {
+                                for (int i = 0; i < indent * spaces; i++) {
                                     dest.append(" ");
                                 }
                             }
@@ -97,10 +95,8 @@ macro void? add_json(src, DString* dest, bool pretty = false, int spaces = 4, in
 							dest.append(",");
                             if (pretty) dest.append("\n");
 						}
-                        if (pretty)
-                        {
-                            for (int i = 0; i < indent * spaces; i++)
-                            {
+                        if (pretty) {
+                            for (int i = 0; i < indent * spaces; i++) {
                                 dest.append(" ");
                             }
                         }
@@ -113,10 +109,8 @@ macro void? add_json(src, DString* dest, bool pretty = false, int spaces = 4, in
 			$endforeach
             if (pretty) dest.append("\n");
             indent--;
-            if (pretty)
-            {
-                for (int i = 0; i < indent * spaces; i++)
-                {
+            if (pretty) {
+                for (int i = 0; i < indent * spaces; i++) {
                     dest.append(" ");
                 }
             }
@@ -131,10 +125,8 @@ macro void? add_json(src, DString* dest, bool pretty = false, int spaces = 4, in
 					dest.append(",");
                     if (pretty) dest.append("\n");
 				}
-                if (pretty)
-                {
-                    for (int i = 0; i < indent * spaces; i++)
-                    {
+                if (pretty) {
+                    for (int i = 0; i < indent * spaces; i++) {
                         dest.append(" ");
                     }
                 }
@@ -142,10 +134,8 @@ macro void? add_json(src, DString* dest, bool pretty = false, int spaces = 4, in
 			}
             if (pretty) dest.append("\n");
             indent--;
-            if (pretty)
-            {
-                for (int i = 0; i < indent * spaces; i++)
-                {
+            if (pretty) {
+                for (int i = 0; i < indent * spaces; i++) {
                     dest.append(" ");
                 }
             }
@@ -177,10 +167,8 @@ macro void? add_hashmap(src, DString* dest, bool pretty, int spaces, int indent)
 			dest.append(",");
             if (pretty) dest.append("\n");
 		}
-        if (pretty)
-        {
-            for (int i = 0; i < indent * spaces; i++)
-            {
+        if (pretty) {
+            for (int i = 0; i < indent * spaces; i++) {
                 dest.append(" ");
             }
         }

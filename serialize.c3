@@ -1,7 +1,7 @@
 module json::serialize;
 import std::core;
 
-macro void? add_json(src, DString* dest, int indent = 4, int indent_level = 0) {
+macro void? add_json(src, DString* dest, int indent = 0, int indent_level = 0) {
 	$if ($defined($typeof(src).to_json)):
 		src.to_json(dest, indent, indent_level)!;
 		return;

@@ -19,13 +19,6 @@ fn void test_struct() @test {
     test::eq(json::to_json(foo, allocator::temp())!!, `{"is_bar":true,"baz":1}`);
 }
 
-struct Complex
-{
-    String   s;
-    String[] s1;
-    Foo[]    f;
-}
-
 fn void test_array() @test {
 	int[] xs = { 1, 2 };
 	test::eq(json::to_json(xs, allocator::temp())!!, "[1,2]");
